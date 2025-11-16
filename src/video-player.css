@@ -1,0 +1,29 @@
+/* For Video Player */
+
+.video-trigger {
+  opacity: 0;
+}
+
+html.wf-design-mode .video-trigger {
+  opacity: 1;
+}
+
+.platform-tab-video-wrap:hover .video-trigger {
+  opacity: 1;
+}
+
+.platform-tab-video-wrap .video-trig-icon.is-play {
+  display: none;
+}
+
+.platform-tab-video-wrap .video-trig-icon.is-pause {
+  display: block;
+}
+
+.platform-tab-video-wrap.is-paused .video-trig-icon.is-pause {
+  display: none;
+}
+
+.platform-tab-video-wrap.is-paused .video-trig-icon.is-play {
+  display: block;
+}
