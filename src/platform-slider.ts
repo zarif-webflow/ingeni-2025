@@ -46,7 +46,9 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
     startIndex: Math.floor(emblaSlides.length / 2),
   };
 
-  const emblaApi = EmblaCarousel(emblaNode, options, [Autoplay({ delay: 5000 })]);
+  const emblaApi = EmblaCarousel(emblaNode, options, [
+    Autoplay({ delay: 5000, stopOnMouseEnter: true, stopOnInteraction: false }),
+  ]);
 
   const abortController = new AbortController();
 
