@@ -15,6 +15,7 @@ const init = () => {
 
     video.loop = true;
     video.muted = true;
+    video.playsInline = true;
 
     const trig = tabVideoWrap.querySelector("[tab-video-trig]");
     if (!trig) {
