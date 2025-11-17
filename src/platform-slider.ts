@@ -3,6 +3,7 @@ import "./slider-typewriter";
 import { getGsap, getHtmlElement, getMultipleHtmlElements } from "@taj-wf/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import EmblaCarousel from "embla-carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 import { prepareTypeWriterText, useTypewriter } from "./slider-typewriter";
 
@@ -45,7 +46,7 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
     startIndex: Math.floor(emblaSlides.length / 2),
   };
 
-  const emblaApi = EmblaCarousel(emblaNode, options);
+  const emblaApi = EmblaCarousel(emblaNode, options, [Autoplay({ delay: 5000 })]);
 
   const abortController = new AbortController();
 
