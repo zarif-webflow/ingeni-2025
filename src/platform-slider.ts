@@ -1,6 +1,10 @@
+import "./slider-typewriter";
+
 import { getGsap, getHtmlElement, getMultipleHtmlElements } from "@taj-wf/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import EmblaCarousel from "embla-carousel";
+
+import { prepareTypeWriterText, useTypewriter } from "./slider-typewriter";
 
 type CarouselInstance = {
   emblaNode: HTMLElement;
@@ -166,8 +170,9 @@ const initializeCarousels = () => {
     const { emblaApi, emblaSlides } = emblaReturn;
 
     let currentIndex = emblaApi.selectedScrollSnap();
+    const typeWriterTextContents: Array<string> = [];
 
-    const selectCurrentSlide = (currIndex: number) => {
+    const selectCurrentSlide = (currIndex: number, isFirstTime: boolean = false) => {
       if (!emblaSlides) {
         console.debug("selectCurrentSlide was used before carousel was initialized");
         return;
@@ -178,6 +183,15 @@ const initializeCarousels = () => {
         const isCurrentSlide = i === currIndex;
 
         if (isCurrentSlide) {
+          const targetTextContent = typeWriterTextContents[i];
+
+          if (!targetTextContent) {
+            console.error("Typewriter text content not found for current slide");
+            continue;
+          }
+
+          useTypewriter(targetTextContent, isFirstTime ? 1300 : 100);
+
           slideCard.classList.add("is-selected");
 
           gsap.to(slideCard, { scale: 1, x: 0, ease: "back", duration: 0.7 });
@@ -210,7 +224,20 @@ const initializeCarousels = () => {
       }
     };
 
-    selectCurrentSlide(currentIndex);
+    for (let i = 0; i < emblaSlides.length; i++) {
+      const slideCard = emblaSlides[i]!;
+
+      const slideCardTextContent = slideCard.getAttribute("typewriter-text");
+
+      if (!slideCardTextContent) {
+        console.error("Slide card is missing typewriter-text attribute");
+        continue;
+      }
+
+      typeWriterTextContents.push(prepareTypeWriterText(slideCardTextContent));
+    }
+
+    selectCurrentSlide(currentIndex, true);
 
     emblaApi.on("select", () => {
       currentIndex = emblaApi.selectedScrollSnap();
