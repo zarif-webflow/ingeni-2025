@@ -1,6 +1,5 @@
 import "./slider-typewriter";
 
-import { wait } from "@finsweet/ts-utils";
 import { getGsap, getHtmlElement, getMultipleHtmlElements } from "@taj-wf/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import EmblaCarousel from "embla-carousel";
@@ -81,7 +80,7 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
   const autoPlayDelay = Number.parseInt(emblaNode.getAttribute("autoplay-delay") || "5", 10) * 1000;
 
   const emblaApi = EmblaCarousel(emblaNode, options, [
-    // Autoplay({ delay: autoPlayDelay, stopOnMouseEnter: true, stopOnInteraction: false }),
+    Autoplay({ delay: autoPlayDelay, stopOnMouseEnter: true, stopOnInteraction: false }),
   ]);
 
   const abortController = new AbortController();
@@ -194,6 +193,19 @@ const sortLeftToRightElements = (elements: HTMLElement[]) => {
   });
 };
 
+const callIntervals = (fn: () => void, times: number, intervalMs: number) => {
+  let count = 0;
+  const intervalId = setInterval(() => {
+    fn();
+    count += 1;
+    if (count >= times) {
+      clearInterval(intervalId);
+    }
+  }, intervalMs);
+
+  return () => clearInterval(intervalId);
+};
+
 const initializeCarousels = () => {
   const emblaNodes = getEmblaNodes();
 
@@ -220,17 +232,9 @@ const initializeCarousels = () => {
     let currentIndex = emblaApi.selectedScrollSnap();
     const typeWriterTextContents: Array<string> = [];
 
-    const executeSlideMorphAnimation = async (selectedIndex: number) => {
+    const executeSlideMorphAnimation = async (selectedIndex: number, jump: boolean = false) => {
       const currentSlideCard = emblaSlides[selectedIndex]!;
       const allSlideCards = sortLeftToRightElements(emblaSlides);
-
-      // console.log(allSlideCards, "SORTED SLIDE CARDS");
-      // console.log(selectedIndex, "SELECTED INDEX");
-
-      // const allSlideCards = getMultipleHtmlElements({
-      //   selector: "[data-carousel-slide]",
-      //   parent: emblaNode,
-      // });
 
       if (!allSlideCards) return;
 
@@ -256,8 +260,15 @@ const initializeCarousels = () => {
         const isCurrentSlide = i === currentSlidePlacementIndex;
 
         if (isCurrentSlide) {
-          gsap.to(slideCard, { scale: 1, x: 0, ease: "power2.out", duration: 0.2 });
+          gsap.to(slideCard, {
+            scale: 1,
+            x: 0,
+            ease: "back",
+            duration: 0,
+            overwrite: true,
+          });
         } else {
+          const isFirstOrLastSlide = i === 0 || i === allSlideCards.length - 1;
           const isLeftSide = i < currentSlidePlacementIndex;
 
           const positionIndex = isLeftSide
@@ -279,8 +290,9 @@ const initializeCarousels = () => {
               const scale = 0.92 - positionIndex * 0.05;
               return scale;
             },
-            ease: "power2.out",
-            duration: 0.2,
+            ease: "back",
+            duration: isFirstOrLastSlide ? 0 : 0,
+            overwrite: true,
           });
         }
       }
@@ -292,7 +304,13 @@ const initializeCarousels = () => {
         return;
       }
 
-      executeSlideMorphAnimation(currIndex);
+      callIntervals(
+        () => {
+          executeSlideMorphAnimation(currIndex, true);
+        },
+        10,
+        50
+      );
 
       for (let i = 0; i < emblaSlides.length; i++) {
         const slideCard = emblaSlides[i]!;
@@ -311,33 +329,9 @@ const initializeCarousels = () => {
 
           slideCard.classList.add("is-selected");
           sliderDotButton.classList.add("is-selected");
-
-          // gsap.to(slideCard, { scale: 1, x: 0, ease: "back", duration: 0.7 });
         } else {
           slideCard.classList.remove("is-selected");
           sliderDotButton.classList.remove("is-selected");
-          // const isLeftSide = i < currIndex;
-
-          // const positionIndex = isLeftSide ? currIndex - i - 1 : i - currIndex - 1;
-
-          // const transformAlign = isLeftSide ? "right" : "left";
-          // slideCard.style.transformOrigin = `${transformAlign} center`;
-
-          // gsap.to(slideCard, {
-          //   x: () => {
-          //     const gapAdjustment = 4 + positionIndex * 2;
-
-          //     return isLeftSide
-          //       ? `${gapAdjustment * positionIndex}%`
-          //       : `-${gapAdjustment * positionIndex}%`;
-          //   },
-          //   scale: () => {
-          //     const scale = 0.92 - positionIndex * 0.05;
-          //     return scale;
-          //   },
-          //   ease: "back",
-          //   duration: 0.7,
-          // });
         }
       }
     };
@@ -365,29 +359,8 @@ const initializeCarousels = () => {
     emblaApi.on("select", () => {
       currentIndex = emblaApi.selectedScrollSnap();
 
-      const allSlideCards = sortLeftToRightElements(emblaSlides);
-
-      console.log(allSlideCards, "ON SELECT - SORTED SLIDE CARDS");
-      console.log(currentIndex, "ON SELECT - SELECTED INDEX");
-
       selectCurrentSlide(currentIndex);
     });
-
-    // emblaApi.on("settle", () => {
-    //   currentIndex = emblaApi.selectedScrollSnap();
-
-    //   const allSlideCards = sortLeftToRightElements(emblaSlides);
-
-    //   executeSlideMorphAnimation(currentIndex);
-    //   console.log(allSlideCards, "ON SELECT - SORTED SLIDE CARDS");
-    //   console.log(currentIndex, "ON SELECT - SELECTED INDEX");
-    // });
-
-    setInterval(() => {
-      currentIndex = emblaApi.selectedScrollSnap();
-
-      executeSlideMorphAnimation(currentIndex);
-    }, 100);
   }
 };
 
