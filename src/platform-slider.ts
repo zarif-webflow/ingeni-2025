@@ -183,14 +183,14 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
   carouselInstances.push({ emblaNode, api: emblaApi, abortController });
 
   return { emblaNode, emblaApi, emblaSlides };
+};
 
-  const sortLeftToRightElements = (elements: HTMLElement[]) => {
-    return [...elements].sort((a, b) => {
-      const rectA = a.getBoundingClientRect();
-      const rectB = b.getBoundingClientRect();
-      return rectA.left - rectB.left;
-    });
-  };
+const sortLeftToRightElements = (elements: HTMLElement[]) => {
+  return [...elements].sort((a, b) => {
+    const rectA = a.getBoundingClientRect();
+    const rectB = b.getBoundingClientRect();
+    return rectA.left - rectB.left;
+  });
 };
 
 const initializeCarousels = () => {
@@ -221,10 +221,15 @@ const initializeCarousels = () => {
 
     const executeSlideMorphAnimation = (selectedIndex: number) => {
       const currentSlideCard = emblaSlides[selectedIndex]!;
-      const allSlideCards = getMultipleHtmlElements({
-        selector: "[data-carousel-slide]",
-        parent: emblaNode,
-      });
+      const allSlideCards = sortLeftToRightElements(emblaSlides);
+
+      console.log(allSlideCards, "SORTED SLIDE CARDS");
+      console.log(selectedIndex, "SELECTED INDEX");
+
+      // const allSlideCards = getMultipleHtmlElements({
+      //   selector: "[data-carousel-slide]",
+      //   parent: emblaNode,
+      // });
 
       if (!allSlideCards) return;
 
@@ -360,8 +365,6 @@ const initializeCarousels = () => {
       currentIndex = emblaApi.selectedScrollSnap();
 
       selectCurrentSlide(currentIndex);
-
-      console.log(document.querySelectorAll("[typewriter-text]").length, "SLIDES LENGTH");
     });
   }
 };
