@@ -39,7 +39,6 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
     align: "center",
     containScroll: false,
     startIndex: Math.floor(emblaSlides.length / 2),
-    // loop: true,
   };
 
   const emblaApi = EmblaCarousel(emblaNode, options);
@@ -97,7 +96,11 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
       "click",
       (event) => {
         event.stopPropagation(); // Stop event propagation to parent elements
-        if (emblaApi.canScrollNext()) emblaApi.scrollNext();
+        if (emblaApi.canScrollNext()) {
+          emblaApi.scrollNext();
+        } else {
+          emblaApi.scrollTo(0);
+        }
       },
       { capture: false, signal: abortController.signal }
     );
@@ -105,36 +108,40 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
       "click",
       (event) => {
         event.stopPropagation(); // Stop event propagation to parent elements
-        if (emblaApi.canScrollPrev()) emblaApi.scrollPrev();
+        if (emblaApi.canScrollPrev()) {
+          emblaApi.scrollPrev();
+        } else {
+          emblaApi.scrollTo(emblaApi.scrollSnapList().length - 1);
+        }
       },
       { capture: false, signal: abortController.signal }
     );
 
     // Existing button adjustment code
-    const adjustButtons = () => {
-      if (!emblaApi.canScrollNext()) {
-        nextButton.classList.add("is-disable");
-      } else {
-        nextButton.classList.remove("is-disable");
-      }
+    // const adjustButtons = () => {
+    //   if (!emblaApi.canScrollNext()) {
+    //     nextButton.classList.add("is-disable");
+    //   } else {
+    //     nextButton.classList.remove("is-disable");
+    //   }
 
-      if (!emblaApi.canScrollPrev()) {
-        prevButton.classList.add("is-disable");
-      } else {
-        prevButton.classList.remove("is-disable");
-      }
-    };
-    emblaApi.on("init", () => {
-      adjustButtons();
-    });
+    //   if (!emblaApi.canScrollPrev()) {
+    //     prevButton.classList.add("is-disable");
+    //   } else {
+    //     prevButton.classList.remove("is-disable");
+    //   }
+    // };
+    // emblaApi.on("init", () => {
+    //   adjustButtons();
+    // });
 
-    emblaApi.on("reInit", () => {
-      adjustButtons();
-    });
+    // emblaApi.on("reInit", () => {
+    //   adjustButtons();
+    // });
 
-    emblaApi.on("select", () => {
-      adjustButtons();
-    });
+    // emblaApi.on("select", () => {
+    //   adjustButtons();
+    // });
   }
 
   carouselInstances.push({ emblaNode, api: emblaApi, abortController });
@@ -157,6 +164,59 @@ const initializeCarousels = () => {
     if (!gsap) return;
 
     const { emblaApi, emblaSlides } = emblaReturn;
+
+    let currentIndex = emblaApi.selectedScrollSnap();
+
+    const selectCurrentSlide = (currIndex: number) => {
+      if (!emblaSlides) {
+        console.debug("selectCurrentSlide was used before carousel was initialized");
+        return;
+      }
+
+      for (let i = 0; i < emblaSlides.length; i++) {
+        const slideCard = emblaSlides[i]!;
+        const isCurrentSlide = i === currIndex;
+
+        if (isCurrentSlide) {
+          slideCard.classList.add("is-selected");
+
+          gsap.to(slideCard, { scale: 1, x: 0, ease: "back", duration: 0.7 });
+        } else {
+          slideCard.classList.remove("is-selected");
+
+          const isLeftSide = i < currIndex;
+
+          const positionIndex = isLeftSide ? currIndex - i - 1 : i - currIndex - 1;
+
+          const transformAlign = isLeftSide ? "right" : "left";
+          slideCard.style.transformOrigin = `${transformAlign} center`;
+
+          gsap.to(slideCard, {
+            x: () => {
+              const gapAdjustment = 4 + positionIndex * 2;
+
+              return isLeftSide
+                ? `${gapAdjustment * positionIndex}%`
+                : `-${gapAdjustment * positionIndex}%`;
+            },
+            scale: () => {
+              const scale = 0.92 - positionIndex * 0.05;
+              return scale;
+            },
+            ease: "back",
+            duration: 0.7,
+          });
+        }
+      }
+    };
+
+    selectCurrentSlide(currentIndex);
+
+    emblaApi.on("select", () => {
+      currentIndex = emblaApi.selectedScrollSnap();
+
+      selectCurrentSlide(currentIndex);
+    });
   }
 };
 
