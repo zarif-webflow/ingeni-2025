@@ -73,7 +73,8 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
     slides: emblaSlides,
     align: "center",
     containScroll: false,
-    startIndex: Math.floor(emblaSlides.length / 2),
+    startIndex: 0,
+    // startIndex: Math.floor(emblaSlides.length / 2),
     loop: true,
   };
 
@@ -232,7 +233,7 @@ const initializeCarousels = () => {
     let currentIndex = emblaApi.selectedScrollSnap();
     const typeWriterTextContents: Array<string> = [];
 
-    const executeSlideMorphAnimation = async (selectedIndex: number, jump: boolean = false) => {
+    const executeSlideMorphAnimation = async (selectedIndex: number) => {
       const currentSlideCard = emblaSlides[selectedIndex]!;
       const allSlideCards = sortLeftToRightElements(emblaSlides);
 
@@ -254,21 +255,20 @@ const initializeCarousels = () => {
       if (currentSlidePlacementIndex === null) return;
 
       for (let i = 0; i < allSlideCards.length; i++) {
-        // const slideCard = allSlideCards[i]!;
-        const slideCard = allSlideCards[i]!.querySelector<HTMLElement>(".platform-slider-card")!;
+        const slideScalerCard =
+          allSlideCards[i]!.querySelector<HTMLElement>(".platform-slider-scaler")!;
 
         const isCurrentSlide = i === currentSlidePlacementIndex;
 
         if (isCurrentSlide) {
-          gsap.to(slideCard, {
+          gsap.to(slideScalerCard, {
             scale: 1,
             x: 0,
             ease: "back",
-            duration: 0,
+            duration: 0.7,
             overwrite: true,
           });
         } else {
-          const isFirstOrLastSlide = i === 0 || i === allSlideCards.length - 1;
           const isLeftSide = i < currentSlidePlacementIndex;
 
           const positionIndex = isLeftSide
@@ -276,22 +276,22 @@ const initializeCarousels = () => {
             : i - currentSlidePlacementIndex - 1;
 
           const transformAlign = isLeftSide ? "right" : "left";
-          slideCard.style.transformOrigin = `${transformAlign} center`;
+          slideScalerCard.style.transformOrigin = `${transformAlign} center`;
 
-          gsap.to(slideCard, {
+          gsap.to(slideScalerCard, {
             x: () => {
-              const gapAdjustment = 4 + positionIndex * 2;
+              const gapAdjustment = 6 + positionIndex * 3;
 
               return isLeftSide
                 ? `${gapAdjustment * positionIndex}%`
                 : `-${gapAdjustment * positionIndex}%`;
             },
             scale: () => {
-              const scale = 0.92 - positionIndex * 0.05;
+              const scale = 0.9 - positionIndex * 0.05;
               return scale;
             },
             ease: "back",
-            duration: isFirstOrLastSlide ? 0 : 0,
+            duration: 0.7,
             overwrite: true,
           });
         }
@@ -306,7 +306,7 @@ const initializeCarousels = () => {
 
       callIntervals(
         () => {
-          executeSlideMorphAnimation(currIndex, true);
+          executeSlideMorphAnimation(currIndex);
         },
         10,
         50
