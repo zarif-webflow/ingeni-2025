@@ -26,6 +26,36 @@ const SELECTORS = {
 const getEmblaNodes = <T extends HTMLElement>(parent?: T) =>
   getMultipleHtmlElements({ selector: SELECTORS.parent, parent });
 
+const getSliderDotButtons = (emblaNode: HTMLElement, slideLength: number) => {
+  const dotContainer = getHtmlElement({ selector: "[carousel-dots]", parent: emblaNode });
+
+  if (!dotContainer) {
+    console.warn("Dot container not found");
+    return;
+  }
+
+  const dotButton = getHtmlElement({ selector: "button", parent: dotContainer });
+
+  if (!dotButton) {
+    console.warn("Dot button not found");
+    return;
+  }
+
+  const clonedDotButton = dotButton.cloneNode(true) as HTMLButtonElement;
+
+  dotContainer.innerHTML = "";
+
+  const dotButtons: Array<HTMLButtonElement> = [];
+
+  for (let i = 0; i < slideLength; i++) {
+    const newDotButton = clonedDotButton.cloneNode(true) as HTMLButtonElement;
+    dotContainer.appendChild(newDotButton);
+    dotButtons.push(newDotButton);
+  }
+
+  return dotButtons;
+};
+
 const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
   const emblaContainer = getHtmlElement({ selector: SELECTORS.container, parent: emblaNode });
 
@@ -46,8 +76,10 @@ const applyEmblaCarousel = <T extends HTMLElement>(emblaNode: T) => {
     startIndex: Math.floor(emblaSlides.length / 2),
   };
 
+  const autoPlayDelay = Number.parseInt(emblaNode.getAttribute("autoplay-delay") || "5", 10) * 1000;
+
   const emblaApi = EmblaCarousel(emblaNode, options, [
-    Autoplay({ delay: 5000, stopOnMouseEnter: true, stopOnInteraction: false }),
+    Autoplay({ delay: autoPlayDelay, stopOnMouseEnter: true, stopOnInteraction: false }),
   ]);
 
   const abortController = new AbortController();
@@ -168,6 +200,13 @@ const initializeCarousels = () => {
 
     const { emblaApi, emblaSlides } = emblaReturn;
 
+    const sliderDotButtons = getSliderDotButtons(emblaNode, emblaSlides.length);
+
+    if (!sliderDotButtons || sliderDotButtons.length !== emblaSlides.length) {
+      console.error("Slider dot buttons could not be initialized properly");
+      return;
+    }
+
     let currentIndex = emblaApi.selectedScrollSnap();
     const typeWriterTextContents: Array<string> = [];
 
@@ -180,6 +219,7 @@ const initializeCarousels = () => {
       for (let i = 0; i < emblaSlides.length; i++) {
         const slideCard = emblaSlides[i]!;
         const isCurrentSlide = i === currIndex;
+        const sliderDotButton = sliderDotButtons[i]!;
 
         if (isCurrentSlide) {
           const targetTextContent = typeWriterTextContents[i];
@@ -192,11 +232,12 @@ const initializeCarousels = () => {
           useTypewriter(targetTextContent, isFirstTime ? 1300 : 100);
 
           slideCard.classList.add("is-selected");
+          sliderDotButton.classList.add("is-selected");
 
           gsap.to(slideCard, { scale: 1, x: 0, ease: "back", duration: 0.7 });
         } else {
           slideCard.classList.remove("is-selected");
-
+          sliderDotButton.classList.remove("is-selected");
           const isLeftSide = i < currIndex;
 
           const positionIndex = isLeftSide ? currIndex - i - 1 : i - currIndex - 1;
@@ -225,6 +266,7 @@ const initializeCarousels = () => {
 
     for (let i = 0; i < emblaSlides.length; i++) {
       const slideCard = emblaSlides[i]!;
+      const sliderDotButton = sliderDotButtons[i]!;
 
       const slideCardTextContent = slideCard.getAttribute("typewriter-text");
 
@@ -232,6 +274,10 @@ const initializeCarousels = () => {
         console.error("Slide card is missing typewriter-text attribute");
         continue;
       }
+
+      sliderDotButton.addEventListener("click", () => {
+        emblaApi.scrollTo(i);
+      });
 
       typeWriterTextContents.push(prepareTypeWriterText(slideCardTextContent));
     }
