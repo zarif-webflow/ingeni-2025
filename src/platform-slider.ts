@@ -269,6 +269,7 @@ const initializeCarousels = () => {
             overwrite: true,
           });
         } else {
+          const isFirstOrLast = i === 0 || i === allSlideCards.length - 1;
           const isLeftSide = i < currentSlidePlacementIndex;
 
           const positionIndex = isLeftSide
@@ -291,7 +292,7 @@ const initializeCarousels = () => {
               return scale;
             },
             ease: "back",
-            duration: 0.7,
+            duration: isFirstOrLast ? 0.4 : 0.7,
             overwrite: true,
           });
         }
