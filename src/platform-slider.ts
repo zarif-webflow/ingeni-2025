@@ -1,11 +1,7 @@
-import "./slider-typewriter";
-
 import { getGsap, getHtmlElement, getMultipleHtmlElements } from "@taj-wf/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import EmblaCarousel from "embla-carousel";
 import Autoplay from "embla-carousel-autoplay";
-
-import { prepareTypeWriterText, useTypewriter } from "./slider-typewriter";
 
 type CarouselInstance = {
   emblaNode: HTMLElement;
@@ -231,7 +227,6 @@ const initializeCarousels = () => {
     }
 
     let currentIndex = emblaApi.selectedScrollSnap();
-    const typeWriterTextContents: Array<string> = [];
 
     const executeSlideMorphAnimation = async (selectedIndex: number) => {
       const currentSlideCard = emblaSlides[selectedIndex]!;
@@ -299,7 +294,7 @@ const initializeCarousels = () => {
       }
     };
 
-    const selectCurrentSlide = (currIndex: number, isFirstTime: boolean = false) => {
+    const selectCurrentSlide = (currIndex: number) => {
       if (!emblaSlides) {
         console.debug("selectCurrentSlide was used before carousel was initialized");
         return;
@@ -319,15 +314,6 @@ const initializeCarousels = () => {
         const sliderDotButton = sliderDotButtons[i]!;
 
         if (isCurrentSlide) {
-          const targetTextContent = typeWriterTextContents[i];
-
-          if (!targetTextContent) {
-            console.error("Typewriter text content not found for current slide");
-            continue;
-          }
-
-          useTypewriter(targetTextContent, isFirstTime ? 1300 : 100);
-
           slideCard.classList.add("is-selected");
           sliderDotButton.classList.add("is-selected");
         } else {
@@ -338,24 +324,14 @@ const initializeCarousels = () => {
     };
 
     for (let i = 0; i < emblaSlides.length; i++) {
-      const slideCard = emblaSlides[i]!;
       const sliderDotButton = sliderDotButtons[i]!;
-
-      const slideCardTextContent = slideCard.getAttribute("typewriter-text");
-
-      if (!slideCardTextContent) {
-        console.error("Slide card is missing typewriter-text attribute");
-        continue;
-      }
 
       sliderDotButton.addEventListener("click", () => {
         emblaApi.scrollTo(i);
       });
-
-      typeWriterTextContents.push(prepareTypeWriterText(slideCardTextContent));
     }
 
-    selectCurrentSlide(currentIndex, true);
+    selectCurrentSlide(currentIndex);
 
     emblaApi.on("select", () => {
       currentIndex = emblaApi.selectedScrollSnap();
