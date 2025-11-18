@@ -9,5 +9,9 @@
 }
 .platform-slider.is-selected .platform-slider-card {
   border: 1px solid var(--base-color-brand--secondary-100);
-  box-shadow: 0 0 10px 2px rgb(from var(--base-color-brand--secondary-100) r g b / 80%);
+  box-shadow: 0 0 10px 2px rgb(from var(--base-color-brand--secondary-100) r g b / 70%);
+}
+.Typewriter__cursor {
+  display: inline-block;
+  width: 0px;
 }
