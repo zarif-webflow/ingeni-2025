@@ -26,8 +26,8 @@ const SELECTORS = {
 const getEmblaNodes = <T extends HTMLElement>(parent?: T) =>
   getMultipleHtmlElements({ selector: SELECTORS.parent, parent });
 
-const getSliderDotButtons = (emblaNode: HTMLElement, slideLength: number) => {
-  const dotContainer = getHtmlElement({ selector: "[carousel-dots]", parent: emblaNode });
+const getSliderDotButtons = (slideLength: number) => {
+  const dotContainer = getHtmlElement({ selector: "[platform-carousel-dots]" });
 
   if (!dotContainer) {
     console.warn("[carousel-dots] Dot container not found");
@@ -223,7 +223,7 @@ const initializeCarousels = () => {
 
     const { emblaApi, emblaSlides } = emblaReturn;
 
-    const sliderDotButtons = getSliderDotButtons(emblaNode, emblaSlides.length);
+    const sliderDotButtons = getSliderDotButtons(emblaSlides.length);
 
     if (!sliderDotButtons || sliderDotButtons.length !== emblaSlides.length) {
       console.error("Slider dot buttons could not be initialized properly");
