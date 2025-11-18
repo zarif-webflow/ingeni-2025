@@ -30,7 +30,7 @@ const getSliderDotButtons = (emblaNode: HTMLElement, slideLength: number) => {
   const dotContainer = getHtmlElement({ selector: "[carousel-dots]", parent: emblaNode });
 
   if (!dotContainer) {
-    console.warn("Dot container not found");
+    console.warn("[carousel-dots] Dot container not found");
     return;
   }
 
